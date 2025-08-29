@@ -26,8 +26,26 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        
+        # Check if there are changes to commit
+        if git diff --quiet HEAD -- execution_log.csv; then
+          echo "No changes to commit"
+          exit 0
+        fi
+        
+        # Get current timestamp for commit message
+        TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        PROCESS_STATUS="✅ Process Complete"
+        
         git add execution_log.csv
-        git commit -m "Update execution log - $(date)" || exit 0
+        git commit -m "🚀 Automated execution log update
+
+${PROCESS_STATUS} - ${TIMESTAMP}
+- Script executed successfully
+- CSV updated with latest timestamp
+- Git action status: completed
+
+[AUTO-COMMIT]" || exit 0
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
