@@ -9,6 +9,8 @@
       "Bash(del \"C:\\Users\\44776\\Documents\\Github_CPIO\\TEST_AI_TOOLS\\test.py\")",
       "Bash(rm:*)",
       "Bash(python test_hello.py)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)",
       "Bash(git rebase:*)"
     ],
     "deny": [],
