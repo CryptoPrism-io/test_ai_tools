@@ -42,12 +42,11 @@ jobs:
         PROCESS_STATUS="✅ Process Complete"
         
         git add execution_log.csv
-        git commit -m "🚀 Automated execution log update
-${PROCESS_STATUS} - ${TIMESTAMP}
-- Script executed successfully
-- CSV updated with latest timestamp
-- Git action status: completed
-[AUTO-COMMIT]" || exit 0
+        git commit -m "🚀 Automated execution log update" \
+                   -m "✅ Process Complete - ${TIMESTAMP}" \
+                   -m "- Script executed successfully" \
+                   -m "- CSV updated with latest timestamp" \
+                   -m "[AUTO-COMMIT]" || exit 0
         
         # Pull before push to avoid conflicts
         git pull --rebase origin main || git pull --rebase origin master
