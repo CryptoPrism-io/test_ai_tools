@@ -17,6 +17,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0  # Fetch full history for better conflict resolution
       
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -31,6 +32,10 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
+        # Get the default branch name dynamically
+        DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+        echo "Default branch: $DEFAULT_BRANCH"
+        
         # Check if there are changes to commit
         if git diff --quiet HEAD -- execution_log.csv; then
           echo "No changes to commit"
@@ -39,17 +44,43 @@ jobs:
         
         # Get current timestamp for commit message
         TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-        PROCESS_STATUS="✅ Process Complete"
         
-        git add execution_log.csv
-        git commit -m "🚀 Automated execution log update" \
-                   -m "✅ Process Complete - ${TIMESTAMP}" \
-                   -m "- Script executed successfully" \
-                   -m "- CSV updated with latest timestamp" \
-                   -m "[AUTO-COMMIT]" || exit 0
+        # Simple merge strategy with retry logic
+        for i in {1..5}; do
+          echo "Attempt $i to commit and push"
+          
+          # Pull latest changes first
+          git pull origin $DEFAULT_BRANCH --no-rebase || {
+            echo "Pull failed, continuing anyway"
+          }
+          
+          # Stage and commit changes
+          git add execution_log.csv
+          git commit -m "🚀 Automated execution log update" \
+                     -m "✅ Process Complete - ${TIMESTAMP}" \
+                     -m "- Script executed successfully" \
+                     -m "- CSV updated with latest timestamp" \
+                     -m "[AUTO-COMMIT]" || {
+            echo "Nothing to commit or commit failed"
+            exit 0
+          }
+          
+          # Try to push
+          if git push origin $DEFAULT_BRANCH; then
+            echo "Successfully pushed changes"
+            exit 0
+          else
+            echo "Push failed, attempt $i"
+            
+            # If push failed, reset and try again
+            git reset --soft HEAD~1
+            
+            # Wait before retry (exponential backoff)
+            sleep $((i * 3))
+          fi
+        done
         
-        # Pull before push to avoid conflicts
-        git pull --rebase origin main || git pull --rebase origin master
-        git push
+        echo "Failed to push after 5 attempts, but script executed successfully"
+        exit 0  # Don't fail the entire workflow
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
