@@ -1,5 +1,4 @@
 name: Run Test Script Every 5 Minutes
-
 on:
   schedule:
     # Runs every 5 minutes
@@ -44,16 +43,14 @@ jobs:
         
         git add execution_log.csv
         git commit -m "🚀 Automated execution log update
-
 ${PROCESS_STATUS} - ${TIMESTAMP}
 - Script executed successfully
 - CSV updated with latest timestamp
 - Git action status: completed
-
 [AUTO-COMMIT]" || exit 0
-
-        # Pull first to handle any conflicts, then push
-        git pull --rebase origin master || true
+        
+        # Pull before push to avoid conflicts
+        git pull --rebase origin main || git pull --rebase origin master
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
