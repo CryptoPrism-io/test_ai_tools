@@ -11,7 +11,9 @@
       "Bash(python test_hello.py)",
       "Bash(git rm:*)",
       "Bash(git commit:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
